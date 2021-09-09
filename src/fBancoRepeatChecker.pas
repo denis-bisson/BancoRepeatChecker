@@ -95,6 +95,31 @@ type
     ts20: TTabSheet;
     mm20: TMemo;
     aeMainApplicationEvent: TApplicationEvents;
+    gbChosenNumbers: TGroupBox;
+    lblNumberOfChosen: TLabel;
+    cbNumberOfNumbers: TComboBox;
+    cbChosenNumber1: TComboBox;
+    cbChosenNumber2: TComboBox;
+    cbChosenNumber3: TComboBox;
+    cbChosenNumber4: TComboBox;
+    cbChosenNumber5: TComboBox;
+    cbChosenNumber6: TComboBox;
+    cbChosenNumber7: TComboBox;
+    cbChosenNumber8: TComboBox;
+    cbChosenNumber9: TComboBox;
+    cbChosenNumber10: TComboBox;
+    cbChosenNumber11: TComboBox;
+    cbChosenNumber12: TComboBox;
+    cbChosenNumber13: TComboBox;
+    cbChosenNumber14: TComboBox;
+    cbChosenNumber15: TComboBox;
+    cbChosenNumber16: TComboBox;
+    cbChosenNumber17: TComboBox;
+    cbChosenNumber18: TComboBox;
+    cbChosenNumber19: TComboBox;
+    cbChosenNumber20: TComboBox;
+    actCheckOurOurNumbers: TAction;
+    tbCheckOurOurNumbers: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure aeMainApplicationEventIdle(Sender: TObject; var Done: Boolean);
@@ -102,6 +127,8 @@ type
     procedure actValidateDrawResultFileExecute(Sender: TObject);
     procedure actLaunchAnalysisExecute(Sender: TObject);
     procedure actCloseApplicationExecute(Sender: TObject);
+    procedure cbNumberOfNumbersChange(Sender: TObject);
+    procedure actCheckOurOurNumbersExecute(Sender: TObject);
   private
     { Private declarations }
     ABancoDrawList: TBancoDrawList;
@@ -109,6 +136,7 @@ type
     WantedFinalSheet: TTabSheet;
     ArrayMemoXCommonBalls: array[0..NB_BALLS_PER_DRAW] of TMemo;
     ArrayStatsXCommonBalls: array[0..NB_BALLS_PER_DRAW] of integer;
+    ComboChosenNumber: array[0..pred(NB_BALLS_PER_DRAW)] of TComboBox;
     procedure MySetTitle;
     procedure LoadConfiguration;
     procedure SaveConfiguration;
@@ -319,6 +347,7 @@ end;
 procedure TfrmBancoRepeatChecker.LoadConfiguration;
 var
   BancoRepeatCheckerIniRegistry: TRegistryIniFile;
+  iIndex: integer;
 begin
   BancoRepeatCheckerIniRegistry := TRegistryIniFile.Create(BASELOCATIONOFREGISTRYINI);
   try
@@ -327,6 +356,10 @@ begin
       LoadWindowRegistryConfig(BancoRepeatCheckerIniRegistry, Self, MAINCONFIGSECTION);
       pgMainPageControl.ActivePageIndex := ReadInteger(MAINCONFIGSECTION, 'pgMainPageControl', 1);
       ResultPageControl.ActivePageIndex := ReadInteger(MAINCONFIGSECTION, 'ResultPageControl', 0);
+      cbNumberOfNumbers.ItemIndex := ReadInteger(MAINCONFIGSECTION, 'cbNumberOfNumbers', pred(NB_BALLS_PER_DRAW));
+      cbNumberOfNumbersChange(cbNumberOfNumbers);
+      for iIndex := 0 to pred(NB_BALLS_PER_DRAW) do
+        ComboChosenNumber[iIndex].ItemIndex := ReadInteger(MAINCONFIGSECTION, 'ChosenNumber' + iIndex.ToString, iIndex);
       //..LoadConfiguration
     end;
   finally
@@ -352,6 +385,7 @@ end;
 procedure TfrmBancoRepeatChecker.SaveConfiguration;
 var
   BancoRepeatCheckerIniRegistry: TRegistryIniFile;
+  iIndex: integer;
 begin
   BancoRepeatCheckerIniRegistry := TRegistryIniFile.Create(BASELOCATIONOFREGISTRYINI);
   try
@@ -360,7 +394,10 @@ begin
       SaveWindowRegistryConfig(BancoRepeatCheckerIniRegistry, Self, MAINCONFIGSECTION);
       WriteInteger(MAINCONFIGSECTION, 'pgMainPageControl', pgMainPageControl.ActivePageIndex);
       WriteInteger(MAINCONFIGSECTION, 'ResultPageControl', ResultPageControl.ActivePageIndex);
-      //..SaveC
+      WriteInteger(MAINCONFIGSECTION, 'cbNumberOfNumbers', cbNumberOfNumbers.ItemIndex);
+      for iIndex := 0 to pred(NB_BALLS_PER_DRAW) do
+        WriteInteger(MAINCONFIGSECTION, 'ChosenNumber' + iIndex.ToString, ComboChosenNumber[iIndex].ItemIndex);
+      //..SaveConfiguration
     end;
   finally
     BancoRepeatCheckerIniRegistry.Free;
@@ -390,6 +427,7 @@ begin
   begin
     ArrayMemoXCommonBalls[iMemoIndex].Clear;
     ArrayStatsXCommonBalls[iMemoIndex] := 0;
+    if iMemoIndex < NB_BALLS_PER_DRAW then ComboChosenNumber[iMemoIndex].Enabled := False;
   end;
   memoSommaire.Clear;
 
@@ -403,10 +441,13 @@ end;
 { TfrmBancoRepeatChecker.EnableToute }
 procedure TfrmBancoRepeatChecker.EnableAllelements;
 var
-  iAction: integer;
+  iAction, iBallIndex: integer;
 begin
   for iAction := 0 to pred(alMainActionList.ActionCount) do
     alMainActionList.Actions[iAction].Enabled := TRUE;
+
+  for iBallIndex := 0 to NB_BALLS_PER_DRAW do
+    if iBallIndex < NB_BALLS_PER_DRAW then ComboChosenNumber[iBallIndex].Enabled := True;
 
   if bFinalActionResult then
   begin
@@ -481,6 +522,8 @@ end;
 
 { TfrmBancoRepeatChecker.FormCreate }
 procedure TfrmBancoRepeatChecker.FormCreate(Sender: TObject);
+var
+  iIndex: integer;
 begin
   bFirstIdle := True;
   ABancoDrawList := TBancoDrawList.Create;
@@ -505,6 +548,28 @@ begin
   ArrayMemoXCommonBalls[18] := mm18;
   ArrayMemoXCommonBalls[19] := mm19;
   ArrayMemoXCommonBalls[20] := mm20;
+  ComboChosenNumber[0] := cbChosenNumber1;
+  ComboChosenNumber[1] := cbChosenNumber2;
+  ComboChosenNumber[2] := cbChosenNumber3;
+  ComboChosenNumber[3] := cbChosenNumber4;
+  ComboChosenNumber[4] := cbChosenNumber5;
+  ComboChosenNumber[5] := cbChosenNumber6;
+  ComboChosenNumber[6] := cbChosenNumber7;
+  ComboChosenNumber[7] := cbChosenNumber8;
+  ComboChosenNumber[8] := cbChosenNumber9;
+  ComboChosenNumber[9] := cbChosenNumber10;
+  ComboChosenNumber[10] := cbChosenNumber11;
+  ComboChosenNumber[11] := cbChosenNumber12;
+  ComboChosenNumber[12] := cbChosenNumber13;
+  ComboChosenNumber[13] := cbChosenNumber14;
+  ComboChosenNumber[14] := cbChosenNumber15;
+  ComboChosenNumber[15] := cbChosenNumber16;
+  ComboChosenNumber[16] := cbChosenNumber17;
+  ComboChosenNumber[17] := cbChosenNumber18;
+  ComboChosenNumber[18] := cbChosenNumber19;
+  ComboChosenNumber[19] := cbChosenNumber20;
+  for iIndex := 1 to MAX_BALL_NUMBER do ComboChosenNumber[0].Items.Add(iIndex.ToString);
+  for iIndex := 1 to pred(NB_BALLS_PER_DRAW) do ComboChosenNumber[iIndex].Items.Assign(ComboChosenNumber[0].Items);
   MySetTitle;
 end;
 
@@ -522,6 +587,15 @@ begin
     bFirstIdle := FALSE;
     LoadConfiguration;
   end;
+end;
+
+{ TfrmBancoRepeatChecker.cbNumberOfNumbersChange }
+procedure TfrmBancoRepeatChecker.cbNumberOfNumbersChange(Sender: TObject);
+var
+  iIndex: integer;
+begin
+  for iIndex := 0 to pred(NB_BALLS_PER_DRAW) do
+    ComboChosenNumber[iIndex].Visible := (iIndex <= cbNumberOfNumbers.ItemIndex);
 end;
 
 { TfrmBancoRepeatChecker.actEditDrawResultFileExecute }
@@ -619,6 +693,92 @@ end;
 procedure TfrmBancoRepeatChecker.actCloseApplicationExecute(Sender: TObject);
 begin
   Close;
+end;
+
+{ TfrmBancoRepeatChecker.actCloseApplicationExecute }
+procedure TfrmBancoRepeatChecker.actCheckOurOurNumbersExecute(Sender: TObject);
+var
+  iDrawIndex, iNbMatch, iMatchIndex, iBallIndex: integer;
+  RememberCursor: TCursor;
+  sCurrentLine, sMimicLine: string;
+  BancoDrawFromOurSelection: TBancoDraw;
+  slDummy: TStringList;
+  Year, Month, Day: WORD;
+begin
+  DisableAllElements;
+  RememberCursor := Screen.Cursor;
+  try
+    Screen.Cursor := crHourGlass;
+
+    slDummy := TStringList.Create;
+    try
+      DecodeDate(now, Year, Month, Day);
+      sMimicLine := Format('%4.4d-%2.2d-%2.2d ', [Year, Month, Day]);
+      for iBallIndex := 0 to pred(NB_BALLS_PER_DRAW) do
+        if iBallIndex <= cbNumberOfNumbers.ItemIndex then
+          sMimicLine := sMimicLine + Format(' %2.2d', [succ(ComboChosenNumber[iBallIndex].ItemIndex)])
+        else
+          sMimicLine := sMimicLine + Format(' %2.2d', [succ(MAX_BALL_NUMBER) + iBallIndex]);
+      // sMimicLine := sMimicLine + ' 00';
+
+      BancoDrawFromOurSelection := TBancoDraw.MyCreate(sMimicLine, 0, now, slDummy);
+
+      try
+        if LoadDatabaseInMemory then
+        begin
+          MasterGage.Progress := 0;
+          MasterGage.MaxValue := ABancoDrawList.Count;
+          MasterGage.Visible := True;
+          Application.ProcessMessages;
+          try
+
+            StatusWindow.Lines.BeginUpdate;
+            try
+              for iDrawIndex := 0 to pred(ABancoDrawList.Count) do
+              begin
+                sCurrentLine := ABancoDrawList.BancoDraw[iDrawIndex].GetBasicReportLine;
+                StatusWindow.Lines.Add(sCurrentLine + ' - ' + ABancoDrawList.BancoDraw[iDrawIndex].CompareToThisDraw(BancoDrawFromOurSelection, iNbMatch));
+                ArrayMemoXCommonBalls[iNbMatch].Lines.Add(sCurrentLine);
+                inc(ArrayStatsXCommonBalls[iNbMatch]);
+                MasterGage.Progress := MasterGage.Progress + 1;
+              end;
+
+              StatusWindow.Lines.Add(ABancoDrawList.BancoDraw[pred(ABancoDrawList.Count)].GetBasicReportLine);
+              MasterGage.Progress := MasterGage.Progress + 1;
+
+              for iMatchIndex := 0 to NB_BALLS_PER_DRAW do
+              begin
+                MemoSommaire.Lines.Add(Format('Nombre de retour de %2.2d numéro%s: %d', [iMatchIndex, IfThen(iMatchIndex > 1, 's', ' '), ArrayStatsXCommonBalls[iMatchIndex]]));
+                ArrayMemoXCommonBalls[iMatchIndex].ScrollBars := ssBoth;
+                ArrayMemoXCommonBalls[iMatchIndex].WordWrap := False;
+              end;
+
+              pgMainPageControl.ActivePage := tsResults;
+              ResultPageControl.ActivePage := tsSummary;
+            finally
+              StatusWindow.Lines.EndUpdate;
+            end;
+            Application.ProcessMessages;
+          finally
+            MasterGage.Visible := False;
+          end;
+
+          StatusWindow.SelStart := Length(StatusWindow.Text);
+          StatusWindow.SelLength := 0;
+          SendMessage(StatusWindow.Handle, EM_SCROLLCARET, 0, 0);
+
+          bFinalActionResult := True;
+        end;
+      finally
+        FreeAndNil(BancoDrawFromOurSelection);
+      end;
+    finally
+      FreeAndNil(slDummy);
+    end;
+  finally
+    EnableAllelements;
+    Screen.Cursor := RememberCursor;
+  end;
 end;
 
 end.

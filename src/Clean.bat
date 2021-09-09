@@ -1,16 +1,14 @@
 ::********************************************************************************
-::* DprojFilter                                                                  *
+::* BANCO REPEAT CHECKER                                                         *
 ::* -----------------------------------------------------------------------------*
-::* Batch file to clean the project directory.                                   *
+::* Application to make some fun with past draw results of Loto-Quénbec BANCO    *
+::* lottery draw results.                                                        *
 ::* May be executed prior build, commmit, backup, etc. to remove unused files.   *
-::* Written by Denis Bisson, Drummondville, Québec, 2021-08-27.                  *
+::* Written by Denis Bisson, Drummondville, Québec, 2021-09-09.                  *
 ::* -----------------------------------------------------------------------------*
-::* Used in the project DprojFilter                                              *
-::* Originally and mainly written by Thomas Mueller                              *
-::*   https://osdn.net/projects/dprojfilter                                      *
-::* This little adaptation written by Denis Bisson, Drummondville, Québec, Canada*
-::*   https://github.com/denis-bisson/DprojFilter                                *
-::*   2021-08-27                                                                 *
+::* Originally written by Denis Bisson, Drummondville, Québec, Canada            *
+::*   https://github.com/denis-bisson/                                           *
+::*   2021-09-09                                                                 *
 ::* -----------------------------------------------------------------------------*
 ::* You should not remove these comments.                                        *
 ::********************************************************************************
@@ -29,5 +27,5 @@ DEL /Q /S *.local
 DEL /Q /S *.~dsk
 DEL /Q /S *.identcache
 DEL /Q /S *.dsk
-DEL DprojFilter.exe
+DEL BancoRepeatChecker.exe
 ECHO "Clean is done!"

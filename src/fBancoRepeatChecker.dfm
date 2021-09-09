@@ -3888,8 +3888,13 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
       Top = 0
       Action = actLaunchAnalysis
     end
-    object tbFive: TToolButton
+    object tbCheckOurOurNumbers: TToolButton
       Left = 117
+      Top = 0
+      Action = actCheckOurOurNumbers
+    end
+    object tbFive: TToolButton
+      Left = 156
       Top = 0
       Width = 8
       Caption = 'tbFive'
@@ -3897,7 +3902,7 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
       Style = tbsSeparator
     end
     object tbCloseApplication: TToolButton
-      Left = 125
+      Left = 164
       Top = 0
       Action = actCloseApplication
     end
@@ -3907,7 +3912,7 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
     Top = 40
     Width = 634
     Height = 261
-    ActivePage = tsResults
+    ActivePage = tsLog
     Align = alClient
     TabOrder = 1
     object tsLog: TTabSheet
@@ -3928,7 +3933,7 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
         Left = 0
         Top = 0
         Width = 626
-        Height = 216
+        Height = 126
         Align = alClient
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
@@ -3942,6 +3947,214 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
         WordWrap = False
         Zoom = 100
       end
+      object gbChosenNumbers: TGroupBox
+        Left = 0
+        Top = 126
+        Width = 626
+        Height = 90
+        Align = alBottom
+        Caption = 'Num'#233'ros choisis'
+        TabOrder = 1
+        object lblNumberOfChosen: TLabel
+          Left = 16
+          Top = 16
+          Width = 130
+          Height = 13
+          Caption = 'Nombre de num'#233'ros choisis'
+        end
+        object cbNumberOfNumbers: TComboBox
+          Left = 152
+          Top = 12
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          ItemIndex = 19
+          TabOrder = 0
+          Text = '20'
+          OnChange = cbNumberOfNumbersChange
+          Items.Strings = (
+            '1'
+            '2'
+            '3'
+            '4'
+            '5'
+            '6'
+            '7'
+            '8'
+            '9'
+            '10'
+            '11'
+            '12'
+            '13'
+            '14'
+            '15'
+            '16'
+            '17'
+            '18'
+            '19'
+            '20')
+        end
+        object cbChosenNumber1: TComboBox
+          Left = 17
+          Top = 35
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 1
+        end
+        object cbChosenNumber2: TComboBox
+          Left = 64
+          Top = 35
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 2
+        end
+        object cbChosenNumber3: TComboBox
+          Left = 113
+          Top = 35
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 3
+        end
+        object cbChosenNumber4: TComboBox
+          Left = 161
+          Top = 35
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 4
+        end
+        object cbChosenNumber5: TComboBox
+          Left = 210
+          Top = 35
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 5
+        end
+        object cbChosenNumber6: TComboBox
+          Left = 258
+          Top = 35
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 6
+        end
+        object cbChosenNumber7: TComboBox
+          Left = 307
+          Top = 35
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 7
+        end
+        object cbChosenNumber8: TComboBox
+          Left = 355
+          Top = 35
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 8
+        end
+        object cbChosenNumber9: TComboBox
+          Left = 404
+          Top = 35
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 9
+        end
+        object cbChosenNumber10: TComboBox
+          Left = 453
+          Top = 35
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 10
+        end
+        object cbChosenNumber11: TComboBox
+          Left = 17
+          Top = 62
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 11
+        end
+        object cbChosenNumber12: TComboBox
+          Left = 64
+          Top = 62
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 12
+        end
+        object cbChosenNumber13: TComboBox
+          Left = 113
+          Top = 62
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 13
+        end
+        object cbChosenNumber14: TComboBox
+          Left = 161
+          Top = 62
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 14
+        end
+        object cbChosenNumber15: TComboBox
+          Left = 210
+          Top = 62
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 15
+        end
+        object cbChosenNumber16: TComboBox
+          Left = 258
+          Top = 62
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 16
+        end
+        object cbChosenNumber17: TComboBox
+          Left = 307
+          Top = 62
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 17
+        end
+        object cbChosenNumber18: TComboBox
+          Left = 355
+          Top = 62
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 18
+        end
+        object cbChosenNumber19: TComboBox
+          Left = 404
+          Top = 62
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 19
+        end
+        object cbChosenNumber20: TComboBox
+          Left = 453
+          Top = 62
+          Width = 41
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 20
+        end
+      end
     end
     object tsResults: TTabSheet
       Caption = '&R'#233'sultats'
@@ -3951,7 +4164,7 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
         Top = 0
         Width = 626
         Height = 233
-        ActivePage = ts0
+        ActivePage = tsSummary
         Align = alClient
         TabOrder = 0
         object tsSummary: TTabSheet
@@ -5453,6 +5666,14 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
       ImageIndex = 2
       ShortCut = 32883
       OnExecute = actCloseApplicationExecute
+    end
+    object actCheckOurOurNumbers: TAction
+      Caption = 'Explore r'#233'sultat avec notre s'#233'lection'
+      Hint = 
+        'Fouille dans tous les tirages pr'#233'c'#233'dents pour voir ce que nous a' +
+        'urions eu comme r'#233'sultat avec les num'#233'ros qu'#39'on vient de choisir'
+      ImageIndex = 4
+      OnExecute = actCheckOurOurNumbersExecute
     end
   end
   object aeMainApplicationEvent: TApplicationEvents
