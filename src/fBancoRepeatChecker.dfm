@@ -3873,22 +3873,20 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
     Caption = 'tbMainToolBar'
     Images = ilMainImageList
     TabOrder = 0
-    ExplicitLeft = -49
-    ExplicitWidth = 684
-    object tbOne: TToolButton
+    object tbEditDrawResultFile: TToolButton
       Left = 0
       Top = 0
-      Action = actEdit
+      Action = actEditDrawResultFile
     end
-    object tbTwo: TToolButton
+    object tbValidateDrawResultFile: TToolButton
       Left = 39
       Top = 0
-      Action = actValideLeFichierDesNumeros
+      Action = actValidateDrawResultFile
     end
-    object tbFour: TToolButton
+    object tbLaunchAnalysis: TToolButton
       Left = 78
       Top = 0
-      Action = actChercheCetteCombinaison
+      Action = actLaunchAnalysis
     end
     object tbFive: TToolButton
       Left = 117
@@ -3898,10 +3896,10 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
       ImageIndex = 3
       Style = tbsSeparator
     end
-    object tbSix: TToolButton
+    object tbCloseApplication: TToolButton
       Left = 125
       Top = 0
-      Action = actExit
+      Action = actCloseApplication
     end
   end
   object pgMainPageControl: TPageControl
@@ -3912,10 +3910,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
     ActivePage = tsResults
     Align = alClient
     TabOrder = 1
-    ExplicitLeft = -49
-    ExplicitTop = 1
-    ExplicitWidth = 684
-    ExplicitHeight = 298
     object tsLog: TTabSheet
       Caption = '&Journal'
       object MasterGage: TGauge
@@ -3978,8 +3972,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             ReadOnly = True
             ScrollBars = ssVertical
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts0: TTabSheet
@@ -3997,8 +3989,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts1: TTabSheet
@@ -4017,8 +4007,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts2: TTabSheet
@@ -4037,8 +4025,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts3: TTabSheet
@@ -4057,8 +4043,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts4: TTabSheet
@@ -4077,8 +4061,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts5: TTabSheet
@@ -4097,8 +4079,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts6: TTabSheet
@@ -4117,8 +4097,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts7: TTabSheet
@@ -4137,8 +4115,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts8: TTabSheet
@@ -4157,8 +4133,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts9: TTabSheet
@@ -4177,8 +4151,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts10: TTabSheet
@@ -4197,8 +4169,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts11: TTabSheet
@@ -4217,8 +4187,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts12: TTabSheet
@@ -4237,8 +4205,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts13: TTabSheet
@@ -4257,8 +4223,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts14: TTabSheet
@@ -4277,8 +4241,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts15: TTabSheet
@@ -4297,8 +4259,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts16: TTabSheet
@@ -4317,8 +4277,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts17: TTabSheet
@@ -4337,8 +4295,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts18: TTabSheet
@@ -4357,8 +4313,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts19: TTabSheet
@@ -4377,8 +4331,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
         object ts20: TTabSheet
@@ -4397,8 +4349,6 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 619
-            ExplicitHeight = 203
           end
         end
       end
@@ -5477,32 +5427,32 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
     Images = ilMainImageList
     Left = 560
     Top = 223
-    object actChercheCetteCombinaison: TAction
-      Caption = 'Cherche cette combinaison'
-      Hint = 'Cherche cette combinaison'
-      ImageIndex = 1
-      ShortCut = 120
-      OnExecute = actChercheCetteCombinaisonExecute
+    object actEditDrawResultFile: TAction
+      Caption = #201'dite le fichier des num'#233'ros'
+      ImageIndex = 3
+      ShortCut = 115
+      OnExecute = actEditDrawResultFileExecute
     end
-    object actValideLeFichierDesNumeros: TAction
+    object actValidateDrawResultFile: TAction
       Caption = 'Valide le fichier des num'#233'ros'
       Hint = 'Valide le fichier des num'#233'ros'
       ImageIndex = 0
       ShortCut = 16499
-      OnExecute = actValideLeFichierDesNumerosExecute
+      OnExecute = actValidateDrawResultFileExecute
     end
-    object actExit: TAction
-      Caption = 'Sortie'
-      Hint = 'Sortie'
+    object actLaunchAnalysis: TAction
+      Caption = 'Lance l'#39'analyse des r'#233'sultats'
+      Hint = 'Lance l'#39'analyse des r'#233'sultats'
+      ImageIndex = 1
+      ShortCut = 120
+      OnExecute = actLaunchAnalysisExecute
+    end
+    object actCloseApplication: TAction
+      Caption = 'Ferme l'#39'application'
+      Hint = 'Ferme l'#39'application'
       ImageIndex = 2
       ShortCut = 32883
-      OnExecute = actExitExecute
-    end
-    object actEdit: TAction
-      Caption = #201'dite le fichier des num'#233'ros'
-      ImageIndex = 3
-      ShortCut = 115
-      OnExecute = actEditExecute
+      OnExecute = actCloseApplicationExecute
     end
   end
   object aeMainApplicationEvent: TApplicationEvents
