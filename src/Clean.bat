@@ -27,5 +27,7 @@ DEL /Q /S *.local
 DEL /Q /S *.~dsk
 DEL /Q /S *.identcache
 DEL /Q /S *.dsk
+DEL /Q /S *.tvsconfig
+DEL /Q /S *.groupproj
 DEL BancoRepeatChecker.exe
 ECHO "Clean is done!"
