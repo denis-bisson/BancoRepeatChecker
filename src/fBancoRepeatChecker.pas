@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   System.ImageList, Vcl.ImgList, System.Actions, Vcl.ActnList, Vcl.ComCtrls,
-  Vcl.ToolWin, Vcl.StdCtrls, Vcl.Samples.Gauges, Vcl.AppEvnts;
+  Vcl.ToolWin, Vcl.StdCtrls, Vcl.Samples.Gauges, Vcl.AppEvnts, Vcl.ExtCtrls;
 
 const
   NB_BALLS_PER_DRAW = 20;
@@ -21,6 +21,7 @@ type
     property DrawDate: TDateTime read FDrawDate;
     constructor MyCreate(const paramLine: string; const iLineNumber: integer; const dtPreviousDraw: TDateTime; paramSlLinesWithError: TStringList);
     function CompareToThisDraw(APreviousDraw: TBancoDraw; var paramNbMatch: integer): string;
+    function CompareToTheseLists(slMustContainList, slMustNotContainList: TStringList; var paramNbMatch: integer): string;
     function GetBasicReportLine: string;
   end;
 
@@ -96,30 +97,10 @@ type
     mm20: TMemo;
     aeMainApplicationEvent: TApplicationEvents;
     gbChosenNumbers: TGroupBox;
-    lblNumberOfChosen: TLabel;
-    cbNumberOfNumbers: TComboBox;
-    cbChosenNumber1: TComboBox;
-    cbChosenNumber2: TComboBox;
-    cbChosenNumber3: TComboBox;
-    cbChosenNumber4: TComboBox;
-    cbChosenNumber5: TComboBox;
-    cbChosenNumber6: TComboBox;
-    cbChosenNumber7: TComboBox;
-    cbChosenNumber8: TComboBox;
-    cbChosenNumber9: TComboBox;
-    cbChosenNumber10: TComboBox;
-    cbChosenNumber11: TComboBox;
-    cbChosenNumber12: TComboBox;
-    cbChosenNumber13: TComboBox;
-    cbChosenNumber14: TComboBox;
-    cbChosenNumber15: TComboBox;
-    cbChosenNumber16: TComboBox;
-    cbChosenNumber17: TComboBox;
-    cbChosenNumber18: TComboBox;
-    cbChosenNumber19: TComboBox;
-    cbChosenNumber20: TComboBox;
     actCheckOurOurNumbers: TAction;
     tbCheckOurOurNumbers: TToolButton;
+    edContain: TLabeledEdit;
+    edMustNotContain: TLabeledEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure aeMainApplicationEventIdle(Sender: TObject; var Done: Boolean);
@@ -127,7 +108,6 @@ type
     procedure actValidateDrawResultFileExecute(Sender: TObject);
     procedure actLaunchAnalysisExecute(Sender: TObject);
     procedure actCloseApplicationExecute(Sender: TObject);
-    procedure cbNumberOfNumbersChange(Sender: TObject);
     procedure actCheckOurOurNumbersExecute(Sender: TObject);
   private
     { Private declarations }
@@ -136,7 +116,7 @@ type
     WantedFinalSheet: TTabSheet;
     ArrayMemoXCommonBalls: array[0..NB_BALLS_PER_DRAW] of TMemo;
     ArrayStatsXCommonBalls: array[0..NB_BALLS_PER_DRAW] of integer;
-    ComboChosenNumber: array[0..pred(NB_BALLS_PER_DRAW)] of TComboBox;
+    slWantedNumbers, slNonWantedNumbers: TStringList;
     procedure MySetTitle;
     procedure LoadConfiguration;
     procedure SaveConfiguration;
@@ -144,6 +124,10 @@ type
     procedure DisableAllElements;
     procedure EnableAllelements;
     function LoadDatabaseInMemory: boolean;
+    function SanitizeExpression(edExpression: TLabeledEdit; slNumbers: TStringList): boolean;
+    function SanitizeAllExpressions: boolean;
+    function ValidateSearchedNumberAreCorrect: boolean;
+    function MakeSureNothingInCommon(slNumbers1, slNumbers2: TStringList): boolean;
   public
     { Public declarations }
   end;
@@ -228,6 +212,37 @@ begin
     paramSlLinesWithError.Insert(pred(paramSlLinesWithError.Count), '');
     paramSlLinesWithError.Insert(pred(paramSlLinesWithError.Count), Format('Problème avec ligne #%d: %s', [iLineNumber, paramLine]));
   end;
+end;
+
+{ TBancoDraw.CompareToThisList }
+function TBancoDraw.CompareToTheseLists(slMustContainList, slMustNotContainList: TStringList; var paramNbMatch: integer): string;
+var
+  iCurrentIndex, iPreviousIndex, iStartPreviousIndex: integer;
+  bGetOutLittleLoop: boolean;
+begin
+  result := '';
+  paramNbMatch := 0;
+
+  iCurrentIndex := 0;
+  while (iCurrentIndex < NB_BALLS_PER_DRAW) and (paramNbMatch >= 0) do
+  begin
+    if slMustNotContainList.IndexOf(FBallNumbers[iCurrentIndex].ToString) = -1 then
+    begin
+      if (slMustContainList.IndexOf(FBallNumbers[iCurrentIndex].ToString) <> -1) then
+      begin
+        inc(paramNbMatch);
+        result := result + IfThen(result <> '', ',', '') + Format('%2.2d', [FBallNumbers[iCurrentIndex]]);
+      end;
+    end
+    else
+    begin
+      paramNbMatch := -1;
+      result := '';
+    end;
+    inc(iCurrentIndex);
+  end;
+
+  result := Format('%2.2d : %s', [paramNbMatch, Result]);
 end;
 
 { TBancoDraw.CompareToThisDraw }
@@ -347,7 +362,7 @@ end;
 procedure TfrmBancoRepeatChecker.LoadConfiguration;
 var
   BancoRepeatCheckerIniRegistry: TRegistryIniFile;
-  iIndex: integer;
+  //  iIndex: integer;
 begin
   BancoRepeatCheckerIniRegistry := TRegistryIniFile.Create(BASELOCATIONOFREGISTRYINI);
   try
@@ -356,10 +371,8 @@ begin
       LoadWindowRegistryConfig(BancoRepeatCheckerIniRegistry, Self, MAINCONFIGSECTION);
       pgMainPageControl.ActivePageIndex := ReadInteger(MAINCONFIGSECTION, 'pgMainPageControl', 1);
       ResultPageControl.ActivePageIndex := ReadInteger(MAINCONFIGSECTION, 'ResultPageControl', 0);
-      cbNumberOfNumbers.ItemIndex := ReadInteger(MAINCONFIGSECTION, 'cbNumberOfNumbers', pred(NB_BALLS_PER_DRAW));
-      cbNumberOfNumbersChange(cbNumberOfNumbers);
-      for iIndex := 0 to pred(NB_BALLS_PER_DRAW) do
-        ComboChosenNumber[iIndex].ItemIndex := ReadInteger(MAINCONFIGSECTION, 'ChosenNumber' + iIndex.ToString, iIndex);
+      edContain.text := ReadString(MAINCONFIGSECTION, 'edContain2', '1-10');
+      edMustNotContain.text := ReadString(MAINCONFIGSECTION, 'edMustNotContain2', '60-70');
       //..LoadConfiguration
     end;
   finally
@@ -385,7 +398,7 @@ end;
 procedure TfrmBancoRepeatChecker.SaveConfiguration;
 var
   BancoRepeatCheckerIniRegistry: TRegistryIniFile;
-  iIndex: integer;
+  //  iIndex: integer;
 begin
   BancoRepeatCheckerIniRegistry := TRegistryIniFile.Create(BASELOCATIONOFREGISTRYINI);
   try
@@ -394,9 +407,8 @@ begin
       SaveWindowRegistryConfig(BancoRepeatCheckerIniRegistry, Self, MAINCONFIGSECTION);
       WriteInteger(MAINCONFIGSECTION, 'pgMainPageControl', pgMainPageControl.ActivePageIndex);
       WriteInteger(MAINCONFIGSECTION, 'ResultPageControl', ResultPageControl.ActivePageIndex);
-      WriteInteger(MAINCONFIGSECTION, 'cbNumberOfNumbers', cbNumberOfNumbers.ItemIndex);
-      for iIndex := 0 to pred(NB_BALLS_PER_DRAW) do
-        WriteInteger(MAINCONFIGSECTION, 'ChosenNumber' + iIndex.ToString, ComboChosenNumber[iIndex].ItemIndex);
+      WriteString(MAINCONFIGSECTION, 'edContain2', edContain.text);
+      WriteString(MAINCONFIGSECTION, 'edMustNotContain2', edMustNotContain.text);
       //..SaveConfiguration
     end;
   finally
@@ -427,7 +439,6 @@ begin
   begin
     ArrayMemoXCommonBalls[iMemoIndex].Clear;
     ArrayStatsXCommonBalls[iMemoIndex] := 0;
-    if iMemoIndex < NB_BALLS_PER_DRAW then ComboChosenNumber[iMemoIndex].Enabled := False;
   end;
   memoSommaire.Clear;
 
@@ -445,9 +456,6 @@ var
 begin
   for iAction := 0 to pred(alMainActionList.ActionCount) do
     alMainActionList.Actions[iAction].Enabled := TRUE;
-
-  for iBallIndex := 0 to NB_BALLS_PER_DRAW do
-    if iBallIndex < NB_BALLS_PER_DRAW then ComboChosenNumber[iBallIndex].Enabled := True;
 
   if bFinalActionResult then
   begin
@@ -548,28 +556,21 @@ begin
   ArrayMemoXCommonBalls[18] := mm18;
   ArrayMemoXCommonBalls[19] := mm19;
   ArrayMemoXCommonBalls[20] := mm20;
-  ComboChosenNumber[0] := cbChosenNumber1;
-  ComboChosenNumber[1] := cbChosenNumber2;
-  ComboChosenNumber[2] := cbChosenNumber3;
-  ComboChosenNumber[3] := cbChosenNumber4;
-  ComboChosenNumber[4] := cbChosenNumber5;
-  ComboChosenNumber[5] := cbChosenNumber6;
-  ComboChosenNumber[6] := cbChosenNumber7;
-  ComboChosenNumber[7] := cbChosenNumber8;
-  ComboChosenNumber[8] := cbChosenNumber9;
-  ComboChosenNumber[9] := cbChosenNumber10;
-  ComboChosenNumber[10] := cbChosenNumber11;
-  ComboChosenNumber[11] := cbChosenNumber12;
-  ComboChosenNumber[12] := cbChosenNumber13;
-  ComboChosenNumber[13] := cbChosenNumber14;
-  ComboChosenNumber[14] := cbChosenNumber15;
-  ComboChosenNumber[15] := cbChosenNumber16;
-  ComboChosenNumber[16] := cbChosenNumber17;
-  ComboChosenNumber[17] := cbChosenNumber18;
-  ComboChosenNumber[18] := cbChosenNumber19;
-  ComboChosenNumber[19] := cbChosenNumber20;
-  for iIndex := 1 to MAX_BALL_NUMBER do ComboChosenNumber[0].Items.Add(iIndex.ToString);
-  for iIndex := 1 to pred(NB_BALLS_PER_DRAW) do ComboChosenNumber[iIndex].Items.Assign(ComboChosenNumber[0].Items);
+
+  slWantedNumbers := TStringList.Create;
+  slWantedNumbers.Sorted := True;
+  slWantedNumbers.Duplicates := dupIgnore;
+  slWantedNumbers.QuoteChar := #0;
+  slWantedNumbers.StrictDelimiter := True;
+  slWantedNumbers.Delimiter := ',';
+
+  slNonWantedNumbers := TStringList.Create;
+  slNonWantedNumbers.Sorted := True;
+  slNonWantedNumbers.Duplicates := dupIgnore;
+  slNonWantedNumbers.QuoteChar := #0;
+  slNonWantedNumbers.StrictDelimiter := True;
+  slNonWantedNumbers.Delimiter := ',';
+
   MySetTitle;
 end;
 
@@ -587,15 +588,6 @@ begin
     bFirstIdle := FALSE;
     LoadConfiguration;
   end;
-end;
-
-{ TfrmBancoRepeatChecker.cbNumberOfNumbersChange }
-procedure TfrmBancoRepeatChecker.cbNumberOfNumbersChange(Sender: TObject);
-var
-  iIndex: integer;
-begin
-  for iIndex := 0 to pred(NB_BALLS_PER_DRAW) do
-    ComboChosenNumber[iIndex].Visible := (iIndex <= cbNumberOfNumbers.ItemIndex);
 end;
 
 { TfrmBancoRepeatChecker.actEditDrawResultFileExecute }
@@ -698,10 +690,9 @@ end;
 { TfrmBancoRepeatChecker.actCloseApplicationExecute }
 procedure TfrmBancoRepeatChecker.actCheckOurOurNumbersExecute(Sender: TObject);
 var
-  iDrawIndex, iNbMatch, iMatchIndex, iBallIndex: integer;
+  iDrawIndex, iNbMatch, iMatchIndex: integer;
   RememberCursor: TCursor;
   sCurrentLine, sMimicLine: string;
-  BancoDrawFromOurSelection: TBancoDraw;
   slDummy: TStringList;
   Year, Month, Day: WORD;
 begin
@@ -714,63 +705,68 @@ begin
     try
       DecodeDate(now, Year, Month, Day);
       sMimicLine := Format('%4.4d-%2.2d-%2.2d ', [Year, Month, Day]);
-      for iBallIndex := 0 to pred(NB_BALLS_PER_DRAW) do
-        if iBallIndex <= cbNumberOfNumbers.ItemIndex then
-          sMimicLine := sMimicLine + Format(' %2.2d', [succ(ComboChosenNumber[iBallIndex].ItemIndex)])
-        else
-          sMimicLine := sMimicLine + Format(' %2.2d', [succ(MAX_BALL_NUMBER) + iBallIndex]);
-      // sMimicLine := sMimicLine + ' 00';
+      //      for iBallIndex := 0 to pred(NB_BALLS_PER_DRAW) do
+      //        if iBallIndex <= cbNumberOfNumbers.ItemIndex then
+      //          sMimicLine := sMimicLine + Format(' %2.2d', [succ(ComboChosenNumber[iBallIndex].ItemIndex)])
+      //        else
+      //          sMimicLine := sMimicLine + Format(' %2.2d', [succ(MAX_BALL_NUMBER) + iBallIndex]);
 
-      BancoDrawFromOurSelection := TBancoDraw.MyCreate(sMimicLine, 0, now, slDummy);
-
-      try
-        if LoadDatabaseInMemory then
+      if SanitizeAllExpressions then
+      begin
+        if ValidateSearchedNumberAreCorrect then
         begin
-          MasterGage.Progress := 0;
-          MasterGage.MaxValue := ABancoDrawList.Count;
-          MasterGage.Visible := True;
-          Application.ProcessMessages;
-          try
-
-            StatusWindow.Lines.BeginUpdate;
-            try
-              for iDrawIndex := 0 to pred(ABancoDrawList.Count) do
-              begin
-                sCurrentLine := ABancoDrawList.BancoDraw[iDrawIndex].GetBasicReportLine;
-                StatusWindow.Lines.Add(sCurrentLine + ' - ' + ABancoDrawList.BancoDraw[iDrawIndex].CompareToThisDraw(BancoDrawFromOurSelection, iNbMatch));
-                ArrayMemoXCommonBalls[iNbMatch].Lines.Add(sCurrentLine);
-                inc(ArrayStatsXCommonBalls[iNbMatch]);
-                MasterGage.Progress := MasterGage.Progress + 1;
-              end;
-
-              StatusWindow.Lines.Add(ABancoDrawList.BancoDraw[pred(ABancoDrawList.Count)].GetBasicReportLine);
-              MasterGage.Progress := MasterGage.Progress + 1;
-
-              for iMatchIndex := 0 to NB_BALLS_PER_DRAW do
-              begin
-                MemoSommaire.Lines.Add(Format('Nombre de retour de %2.2d numéro%s: %d', [iMatchIndex, IfThen(iMatchIndex > 1, 's', ' '), ArrayStatsXCommonBalls[iMatchIndex]]));
-                ArrayMemoXCommonBalls[iMatchIndex].ScrollBars := ssBoth;
-                ArrayMemoXCommonBalls[iMatchIndex].WordWrap := False;
-              end;
-
-              pgMainPageControl.ActivePage := tsResults;
-              ResultPageControl.ActivePage := tsSummary;
-            finally
-              StatusWindow.Lines.EndUpdate;
-            end;
+          if LoadDatabaseInMemory then
+          begin
+            MasterGage.Progress := 0;
+            MasterGage.MaxValue := ABancoDrawList.Count;
+            MasterGage.Visible := True;
             Application.ProcessMessages;
-          finally
-            MasterGage.Visible := False;
+            try
+              StatusWindow.Lines.BeginUpdate;
+              try
+                for iDrawIndex := 0 to pred(ABancoDrawList.Count) do
+                begin
+                  sCurrentLine := ABancoDrawList.BancoDraw[iDrawIndex].GetBasicReportLine;
+                  StatusWindow.Lines.Add(sCurrentLine + ' - ' + ABancoDrawList.BancoDraw[iDrawIndex].CompareToTheseLists(slWantedNumbers, slNonWantedNumbers, iNbMatch));
+                  if iNbMatch >= 0 then
+                  begin
+                    ArrayMemoXCommonBalls[iNbMatch].Lines.Add(sCurrentLine);
+                    inc(ArrayStatsXCommonBalls[iNbMatch]);
+                  end
+                  else
+                  begin
+
+                  end;
+                  MasterGage.Progress := MasterGage.Progress + 1;
+                end;
+
+                StatusWindow.Lines.Add(ABancoDrawList.BancoDraw[pred(ABancoDrawList.Count)].GetBasicReportLine);
+                MasterGage.Progress := MasterGage.Progress + 1;
+
+                for iMatchIndex := 0 to NB_BALLS_PER_DRAW do
+                begin
+                  MemoSommaire.Lines.Add(Format('Nombre de retour de %2.2d numéro%s: %d', [iMatchIndex, IfThen(iMatchIndex > 1, 's', ' '), ArrayStatsXCommonBalls[iMatchIndex]]));
+                  ArrayMemoXCommonBalls[iMatchIndex].ScrollBars := ssBoth;
+                  ArrayMemoXCommonBalls[iMatchIndex].WordWrap := False;
+                end;
+
+                pgMainPageControl.ActivePage := tsResults;
+                ResultPageControl.ActivePage := tsSummary;
+              finally
+                StatusWindow.Lines.EndUpdate;
+              end;
+              Application.ProcessMessages;
+            finally
+              MasterGage.Visible := False;
+            end;
+
+            StatusWindow.SelStart := Length(StatusWindow.Text);
+            StatusWindow.SelLength := 0;
+            SendMessage(StatusWindow.Handle, EM_SCROLLCARET, 0, 0);
+
+            bFinalActionResult := True;
           end;
-
-          StatusWindow.SelStart := Length(StatusWindow.Text);
-          StatusWindow.SelLength := 0;
-          SendMessage(StatusWindow.Handle, EM_SCROLLCARET, 0, 0);
-
-          bFinalActionResult := True;
         end;
-      finally
-        FreeAndNil(BancoDrawFromOurSelection);
       end;
     finally
       FreeAndNil(slDummy);
@@ -778,6 +774,241 @@ begin
   finally
     EnableAllelements;
     Screen.Cursor := RememberCursor;
+  end;
+end;
+
+{ TfrmBancoRepeatChecker.SanitizeExpression }
+function TfrmBancoRepeatChecker.SanitizeExpression(edExpression: TLabeledEdit; slNumbers: TStringList): boolean;
+const
+  sLEGALCHARACTERS: string = '0123456789-,';
+  sDIGITS: string = '0123456789';
+var
+  iSeeker, iErrorPosition, iPreviousNumber: integer;
+  sMaybeExpression, sCurrentNumber, sArrow: string;
+  bKeepGoing, bWeCurrentlyHaveDash: boolean;
+
+  function LocalAddNumber(iLow, iHigh: integer): boolean;
+  var
+    iIndex: integer;
+  begin
+    result := False;
+
+    if iLow = 0 then
+      iLow := iHigh;
+
+    iIndex := iLow;
+    while (iIndex <= iHigh) and (bKeepGoing) do
+    begin
+      if slNumbers.IndexOf(IntToStr(iIndex)) = -1 then
+      begin
+        slNumbers.Add(IntToStr(iIndex));
+      end
+      else
+      begin
+        WriteStatus('ERREUR: Vous tentez d''incorporer deux fois le numéro ' + IntToStr(iIndex), COLORERROR);
+        bKeepGoing := False;
+        iErrorPosition := pred(iSeeker);
+      end;
+
+      inc(iIndex);
+    end;
+
+    if (pred(iIndex) = iHigh) and (bKeepGoing) then
+      result := True;
+  end;
+
+begin
+  result := False;
+  sMaybeExpression := edExpression.Text;
+  sMaybeExpression := StringReplace(sMaybeExpression, ' ', '', [rfReplaceAll]);
+  edExpression.Text := sMaybeExpression;
+  slNumbers.Clear;
+
+  bKeepGoing := True;
+  sCurrentNumber := '';
+  iPreviousNumber := 0;
+  bWeCurrentlyHaveDash := False;
+  iErrorPosition := 1;
+  iSeeker := 1;
+
+  if length(sMaybeExpression) > 0 then
+  begin
+    while (iSeeker <= length(sMaybeExpression)) and (bKeepGoing) do
+    begin
+      if pos(sMaybeExpression[iSeeker], sDIGITS) <> 0 then
+      begin
+        sCurrentNumber := sCurrentNumber + sMaybeExpression[iSeeker];
+        inc(iSeeker);
+      end
+      else
+      begin
+        if sMaybeExpression[iSeeker] = ',' then
+        begin
+          if sCurrentNumber <> '' then
+          begin
+            if (StrToInt(sCurrentNumber) >= 0) and (StrToInt(sCurrentNumber) <= MAX_BALL_NUMBER) then
+            begin
+              if bWeCurrentlyHaveDash and (iPreviousNumber >= StrToInt(sCurrentNumber)) then
+              begin
+                WriteStatus('ERREUR: Le second numéro d''un intervalle doit être plug grand que le premier...', COLORERROR);
+                iErrorPosition := pred(iSeeker);
+                bKeepGoing := False;
+              end
+              else
+              begin
+                if LocalAddNumber(iPreviousNumber, StrToInt(sCurrentNumber)) then
+                begin
+                  sCurrentNumber := '';
+                  iPreviousNumber := 0;
+                  bWeCurrentlyHaveDash := False;
+                  inc(iSeeker);
+                end;
+              end;
+            end
+            else
+            begin
+              WriteStatus('ERREUR: Valeur de numéro hors norme. Doit être entre 1 et ' + MAX_BALL_NUMBER.ToString + ' compris.', COLORERROR);
+              iErrorPosition := pred(iSeeker);
+              bKeepGoing := False;
+            end;
+          end
+          else
+          begin
+            iErrorPosition := iSeeker;
+            bKeepGoing := False;
+          end;
+        end
+        else
+        begin
+          if sMaybeExpression[iSeeker] = '-' then
+          begin
+            if (not bWeCurrentlyHaveDash) and (sCurrentNumber <> '') then
+            begin
+              if (StrToInt(sCurrentNumber) >= 0) and (StrToInt(sCurrentNumber) <= MAX_BALL_NUMBER) then
+              begin
+                iPreviousNumber := StrToInt(sCurrentNumber);
+                sCurrentNumber := '';
+                bWeCurrentlyHaveDash := True;
+                inc(iSeeker);
+              end
+              else
+              begin
+                WriteStatus('ERREUR: Valeur de numéro hors norme. Doit être entre 1 et ' + MAX_BALL_NUMBER.ToString + ' compris.', COLORERROR);
+                iErrorPosition := pred(iSeeker);
+                bKeepGoing := False;
+              end;
+            end
+            else
+            begin
+              iErrorPosition := iSeeker;
+              bKeepGoing := False;
+            end
+          end
+          else
+          begin
+            iErrorPosition := iSeeker;
+            bKeepGoing := False;
+          end;
+        end;
+      end;
+    end;
+
+    if bKeepGoing then
+    begin
+      if sCurrentNumber <> '' then
+      begin
+        if (StrToInt(sCurrentNumber) >= 0) and (StrToInt(sCurrentNumber) <= MAX_BALL_NUMBER) then
+        begin
+          if bWeCurrentlyHaveDash and (iPreviousNumber >= StrToInt(sCurrentNumber)) then
+          begin
+            WriteStatus('ERREUR: Le second numéro d''un intervalle doit être plug grand que le premier...', COLORERROR);
+            iErrorPosition := pred(iSeeker);
+            bKeepGoing := False;
+          end
+          else
+          begin
+            if LocalAddNumber(iPreviousNumber, StrToInt(sCurrentNumber)) then
+            begin
+            end;
+          end;
+        end
+        else
+        begin
+          WriteStatus('ERREUR: Valeur de numéro hors norme. Doit être entre 1 et ' + MAX_BALL_NUMBER.ToString + ' compris.', COLORERROR);
+          iErrorPosition := pred(iSeeker);
+          bKeepGoing := False;
+        end;
+      end
+      else
+      begin
+        WriteStatus('ERREUR: L''expression semble mal se terminée...', COLORERROR);
+        iErrorPosition := pred(iSeeker);
+        bKeepGoing := False;
+      end;
+    end;
+  end;
+
+  if ((pred(iSeeker) = length(sMaybeExpression)) and (bKeepGoing)) or (length(sMaybeExpression) = 0) then
+  begin
+    result := True;
+  end
+  else
+  begin
+    sArrow := '';
+    while length(sArrow) < pred(iErrorPosition) do
+      sArrow := sArrow + ' ';
+    WriteStatus(Format('ERREUR dans cette expression: "%s"', [StringReplace(edExpression.EditLabel.Caption, '&', '', [rfReplaceAll])]), COLORERROR);
+    WriteStatus(sArrow + '|', COLORERROR);
+    WriteStatus(edExpression.Text, COLORERROR);
+    WriteStatus(sArrow + '|', COLORERROR);
+  end;
+end;
+
+{ TfrmBancoRepeatChecker.SanitizeAllExpressions }
+function TfrmBancoRepeatChecker.SanitizeAllExpressions: boolean;
+begin
+  result := False;
+  if SanitizeExpression(edContain, slWantedNumbers) then
+    if SanitizeExpression(edMustNotContain, slNonWantedNumbers) then
+      result := True;
+end;
+
+{ TfrmBancoRepeatChecker.ValidateSearchedNumberAreCorrect }
+function TfrmBancoRepeatChecker.ValidateSearchedNumberAreCorrect: boolean;
+begin
+  result := False;
+
+  WriteStatus('Doit contenir: ', COLORSTATUS);
+  WriteStatus('    ' + slWantedNumbers.DelimitedText, COLORDANGER);
+  WriteStatus('Ne doit pas contenir: ', COLORSTATUS);
+  WriteStatus('    ' + slNonWantedNumbers.DelimitedText, COLORDANGER);
+  WriteStatus('', COLORSTATUS);
+
+  if MakeSureNothingInCommon(slWantedNumbers, slNonWantedNumbers) then
+  begin
+    result := True;
+  end
+  else
+  begin
+    WriteStatus('ERREUR: Votre liste de numéros qui doit être contenu ne peut pas contenir un numéro qui ne doit pas être contenu en même temps...', COLORERROR);
+  end;
+end;
+
+{ TfrmBancoRepeatChecker.MakeSureNothingInCommon }
+function TfrmBancoRepeatChecker.MakeSureNothingInCommon(slNumbers1, slNumbers2: TStringList): boolean;
+var
+  iIndex: integer;
+begin
+  result := True;
+  iIndex := 0;
+  while (iIndex < slNumbers1.Count) and (result) do
+  begin
+    if slNumbers2.IndexOf(slNumbers1.Strings[iIndex]) <> -1 then
+    begin
+      WriteStatus(Format('ERREUR: Le numéro suivant est contenu dans deux liste: %s', [slNumbers1.Strings[iIndex]]), COLORERROR);
+      result := False;
+    end;
+    inc(iIndex);
   end;
 end;
 

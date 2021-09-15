@@ -3925,15 +3925,14 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
         Align = alBottom
         Progress = 0
         Visible = False
-        ExplicitLeft = 12
-        ExplicitTop = 192
-        ExplicitWidth = 593
+        ExplicitLeft = -3
+        ExplicitTop = 224
       end
       object StatusWindow: TRichEdit
         Left = 0
         Top = 0
         Width = 626
-        Height = 126
+        Height = 144
         Align = alClient
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
@@ -3949,210 +3948,42 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
       end
       object gbChosenNumbers: TGroupBox
         Left = 0
-        Top = 126
+        Top = 144
         Width = 626
-        Height = 90
+        Height = 72
         Align = alBottom
         Caption = 'Num'#233'ros choisis'
         TabOrder = 1
-        object lblNumberOfChosen: TLabel
-          Left = 16
-          Top = 16
-          Width = 130
-          Height = 13
-          Caption = 'Nombre de num'#233'ros choisis'
-        end
-        object cbNumberOfNumbers: TComboBox
-          Left = 152
-          Top = 12
-          Width = 41
+        DesignSize = (
+          626
+          72)
+        object edContain: TLabeledEdit
+          Left = 112
+          Top = 19
+          Width = 511
           Height = 21
-          Style = csDropDownList
-          ItemIndex = 19
+          Hint = 'Liste des num'#233'ros que doit contenir la combinaison'
+          Anchors = [akLeft, akTop, akRight]
+          EditLabel.Width = 41
+          EditLabel.Height = 13
+          EditLabel.Hint = 'Liste des num'#233'ros que doit contenir la combinaison'
+          EditLabel.Caption = '&Contient'
+          LabelPosition = lpLeft
           TabOrder = 0
-          Text = '20'
-          OnChange = cbNumberOfNumbersChange
-          Items.Strings = (
-            '1'
-            '2'
-            '3'
-            '4'
-            '5'
-            '6'
-            '7'
-            '8'
-            '9'
-            '10'
-            '11'
-            '12'
-            '13'
-            '14'
-            '15'
-            '16'
-            '17'
-            '18'
-            '19'
-            '20')
         end
-        object cbChosenNumber1: TComboBox
-          Left = 17
-          Top = 35
-          Width = 41
+        object edMustNotContain: TLabeledEdit
+          Left = 112
+          Top = 46
+          Width = 511
           Height = 21
-          Style = csDropDownList
+          Hint = 'Liste des num'#233'ros que ne doit pas doit contenir la combinaison'
+          Anchors = [akLeft, akTop, akRight]
+          EditLabel.Width = 96
+          EditLabel.Height = 13
+          EditLabel.Hint = 'Liste des num'#233'ros que ne doit pas doit contenir la combinaison'
+          EditLabel.Caption = 'Ne doit &pas contenir'
+          LabelPosition = lpLeft
           TabOrder = 1
-        end
-        object cbChosenNumber2: TComboBox
-          Left = 64
-          Top = 35
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 2
-        end
-        object cbChosenNumber3: TComboBox
-          Left = 113
-          Top = 35
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 3
-        end
-        object cbChosenNumber4: TComboBox
-          Left = 161
-          Top = 35
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 4
-        end
-        object cbChosenNumber5: TComboBox
-          Left = 210
-          Top = 35
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 5
-        end
-        object cbChosenNumber6: TComboBox
-          Left = 258
-          Top = 35
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 6
-        end
-        object cbChosenNumber7: TComboBox
-          Left = 307
-          Top = 35
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 7
-        end
-        object cbChosenNumber8: TComboBox
-          Left = 355
-          Top = 35
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 8
-        end
-        object cbChosenNumber9: TComboBox
-          Left = 404
-          Top = 35
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 9
-        end
-        object cbChosenNumber10: TComboBox
-          Left = 453
-          Top = 35
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 10
-        end
-        object cbChosenNumber11: TComboBox
-          Left = 17
-          Top = 62
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 11
-        end
-        object cbChosenNumber12: TComboBox
-          Left = 64
-          Top = 62
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 12
-        end
-        object cbChosenNumber13: TComboBox
-          Left = 113
-          Top = 62
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 13
-        end
-        object cbChosenNumber14: TComboBox
-          Left = 161
-          Top = 62
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 14
-        end
-        object cbChosenNumber15: TComboBox
-          Left = 210
-          Top = 62
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 15
-        end
-        object cbChosenNumber16: TComboBox
-          Left = 258
-          Top = 62
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 16
-        end
-        object cbChosenNumber17: TComboBox
-          Left = 307
-          Top = 62
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 17
-        end
-        object cbChosenNumber18: TComboBox
-          Left = 355
-          Top = 62
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 18
-        end
-        object cbChosenNumber19: TComboBox
-          Left = 404
-          Top = 62
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 19
-        end
-        object cbChosenNumber20: TComboBox
-          Left = 453
-          Top = 62
-          Width = 41
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 20
         end
       end
     end
@@ -4570,8 +4401,8 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
   object ilMainImageList: TImageList
     Height = 32
     Width = 32
-    Left = 464
-    Top = 223
+    Left = 352
+    Top = 119
     Bitmap = {
       494C010105000800040020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000004000000001002000000000000080
@@ -5638,8 +5469,8 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
   end
   object alMainActionList: TActionList
     Images = ilMainImageList
-    Left = 560
-    Top = 223
+    Left = 504
+    Top = 135
     object actEditDrawResultFile: TAction
       Caption = #201'dite le fichier des num'#233'ros'
       ImageIndex = 3
@@ -5678,7 +5509,7 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
   end
   object aeMainApplicationEvent: TApplicationEvents
     OnIdle = aeMainApplicationEventIdle
-    Left = 288
-    Top = 215
+    Left = 240
+    Top = 151
   end
 end
