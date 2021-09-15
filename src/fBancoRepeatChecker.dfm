@@ -3888,13 +3888,18 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
       Top = 0
       Action = actLaunchAnalysis
     end
-    object tbCheckOurOurNumbers: TToolButton
+    object tbMiseEclair: TToolButton
       Left = 117
+      Top = 0
+      Action = actMiseEclair
+    end
+    object tbCheckOurOurNumbers: TToolButton
+      Left = 156
       Top = 0
       Action = actCheckOurOurNumbers
     end
     object tbFive: TToolButton
-      Left = 156
+      Left = 195
       Top = 0
       Width = 8
       Caption = 'tbFive'
@@ -3902,7 +3907,7 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
       Style = tbsSeparator
     end
     object tbCloseApplication: TToolButton
-      Left = 164
+      Left = 203
       Top = 0
       Action = actCloseApplication
     end
@@ -3930,7 +3935,7 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
       end
       object StatusWindow: TRichEdit
         Left = 0
-        Top = 0
+        Top = 72
         Width = 626
         Height = 144
         Align = alClient
@@ -3948,10 +3953,10 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
       end
       object gbChosenNumbers: TGroupBox
         Left = 0
-        Top = 144
+        Top = 0
         Width = 626
         Height = 72
-        Align = alBottom
+        Align = alTop
         Caption = 'Num'#233'ros choisis'
         TabOrder = 1
         DesignSize = (
@@ -3995,7 +4000,7 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
         Top = 0
         Width = 626
         Height = 233
-        ActivePage = tsSummary
+        ActivePage = ts20
         Align = alClient
         TabOrder = 0
         object tsSummary: TTabSheet
@@ -4395,14 +4400,32 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
             TabOrder = 0
           end
         end
+        object tsExcluded: TTabSheet
+          Caption = 'Exclus'
+          ImageIndex = 22
+          object mmExclus: TMemo
+            Left = 0
+            Top = 0
+            Width = 618
+            Height = 205
+            Align = alClient
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Fixedsys'
+            Font.Style = []
+            ParentFont = False
+            TabOrder = 0
+          end
+        end
       end
     end
   end
   object ilMainImageList: TImageList
     Height = 32
     Width = 32
-    Left = 352
-    Top = 119
+    Left = 303
+    Top = 181
     Bitmap = {
       494C010105000800040020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000004000000001002000000000000080
@@ -5469,8 +5492,8 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
   end
   object alMainActionList: TActionList
     Images = ilMainImageList
-    Left = 504
-    Top = 135
+    Left = 507
+    Top = 181
     object actEditDrawResultFile: TAction
       Caption = #201'dite le fichier des num'#233'ros'
       ImageIndex = 3
@@ -5488,8 +5511,26 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
       Caption = 'Lance l'#39'analyse des r'#233'sultats'
       Hint = 'Lance l'#39'analyse des r'#233'sultats'
       ImageIndex = 1
-      ShortCut = 120
+      ShortCut = 116
       OnExecute = actLaunchAnalysisExecute
+    end
+    object actMiseEclair: TAction
+      Caption = 'Mise-'#201'clair'
+      Hint = 
+        'Va choisir entre 2 et 10 num'#233'ros al'#233'atoires pour les mettres dan' +
+        's les param'#232'tres de recherche'
+      ImageIndex = 4
+      ShortCut = 118
+      OnExecute = actMiseEclairExecute
+    end
+    object actCheckOurOurNumbers: TAction
+      Caption = 'Explore r'#233'sultat avec notre s'#233'lection'
+      Hint = 
+        'Fouille dans tous les tirages pr'#233'c'#233'dents pour voir ce que nous a' +
+        'urions eu comme r'#233'sultat avec les num'#233'ros qu'#39'on vient de choisir'
+      ImageIndex = 1
+      ShortCut = 120
+      OnExecute = actCheckOurOurNumbersExecute
     end
     object actCloseApplication: TAction
       Caption = 'Ferme l'#39'application'
@@ -5498,18 +5539,10 @@ object frmBancoRepeatChecker: TfrmBancoRepeatChecker
       ShortCut = 32883
       OnExecute = actCloseApplicationExecute
     end
-    object actCheckOurOurNumbers: TAction
-      Caption = 'Explore r'#233'sultat avec notre s'#233'lection'
-      Hint = 
-        'Fouille dans tous les tirages pr'#233'c'#233'dents pour voir ce que nous a' +
-        'urions eu comme r'#233'sultat avec les num'#233'ros qu'#39'on vient de choisir'
-      ImageIndex = 4
-      OnExecute = actCheckOurOurNumbersExecute
-    end
   end
   object aeMainApplicationEvent: TApplicationEvents
     OnIdle = aeMainApplicationEventIdle
-    Left = 240
-    Top = 151
+    Left = 99
+    Top = 181
   end
 end

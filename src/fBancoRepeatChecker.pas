@@ -101,6 +101,10 @@ type
     tbCheckOurOurNumbers: TToolButton;
     edContain: TLabeledEdit;
     edMustNotContain: TLabeledEdit;
+    tsExcluded: TTabSheet;
+    mmExclus: TMemo;
+    actMiseEclair: TAction;
+    tbMiseEclair: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure aeMainApplicationEventIdle(Sender: TObject; var Done: Boolean);
@@ -109,13 +113,14 @@ type
     procedure actLaunchAnalysisExecute(Sender: TObject);
     procedure actCloseApplicationExecute(Sender: TObject);
     procedure actCheckOurOurNumbersExecute(Sender: TObject);
+    procedure actMiseEclairExecute(Sender: TObject);
   private
     { Private declarations }
     ABancoDrawList: TBancoDrawList;
     bFirstIdle, bFinalActionResult: boolean;
     WantedFinalSheet: TTabSheet;
-    ArrayMemoXCommonBalls: array[0..NB_BALLS_PER_DRAW] of TMemo;
-    ArrayStatsXCommonBalls: array[0..NB_BALLS_PER_DRAW] of integer;
+    ArrayMemoXCommonBalls: array[0..succ(NB_BALLS_PER_DRAW)] of TMemo;
+    ArrayStatsXCommonBalls: array[0..succ(NB_BALLS_PER_DRAW)] of integer;
     slWantedNumbers, slNonWantedNumbers: TStringList;
     procedure MySetTitle;
     procedure LoadConfiguration;
@@ -128,6 +133,7 @@ type
     function SanitizeAllExpressions: boolean;
     function ValidateSearchedNumberAreCorrect: boolean;
     function MakeSureNothingInCommon(slNumbers1, slNumbers2: TStringList): boolean;
+    function GetInOneSingleCleanSortedLine(slList: TStringList): string;
   public
     { Public declarations }
   end;
@@ -217,14 +223,13 @@ end;
 { TBancoDraw.CompareToThisList }
 function TBancoDraw.CompareToTheseLists(slMustContainList, slMustNotContainList: TStringList; var paramNbMatch: integer): string;
 var
-  iCurrentIndex, iPreviousIndex, iStartPreviousIndex: integer;
-  bGetOutLittleLoop: boolean;
+  iCurrentIndex: integer;
 begin
   result := '';
   paramNbMatch := 0;
 
   iCurrentIndex := 0;
-  while (iCurrentIndex < NB_BALLS_PER_DRAW) and (paramNbMatch >= 0) do
+  while (iCurrentIndex < NB_BALLS_PER_DRAW) and (paramNbMatch <= NB_BALLS_PER_DRAW) do
   begin
     if slMustNotContainList.IndexOf(FBallNumbers[iCurrentIndex].ToString) = -1 then
     begin
@@ -236,13 +241,16 @@ begin
     end
     else
     begin
-      paramNbMatch := -1;
+      paramNbMatch := succ(NB_BALLS_PER_DRAW);
       result := '';
     end;
     inc(iCurrentIndex);
   end;
 
-  result := Format('%2.2d : %s', [paramNbMatch, Result]);
+  if paramNbMatch <= NB_BALLS_PER_DRAW then
+    result := Format('%2.2d : %s', [paramNbMatch, Result])
+  else
+    result := 'Exclue';
 end;
 
 { TBancoDraw.CompareToThisDraw }
@@ -435,7 +443,7 @@ begin
   for iAction := 0 to pred(alMainActionList.ActionCount) do
     alMainActionList.Actions[iAction].Enabled := FALSE;
 
-  for iMemoIndex := 0 to NB_BALLS_PER_DRAW do
+  for iMemoIndex := 0 to succ(NB_BALLS_PER_DRAW) do
   begin
     ArrayMemoXCommonBalls[iMemoIndex].Clear;
     ArrayStatsXCommonBalls[iMemoIndex] := 0;
@@ -452,7 +460,7 @@ end;
 { TfrmBancoRepeatChecker.EnableToute }
 procedure TfrmBancoRepeatChecker.EnableAllelements;
 var
-  iAction, iBallIndex: integer;
+  iAction: integer;
 begin
   for iAction := 0 to pred(alMainActionList.ActionCount) do
     alMainActionList.Actions[iAction].Enabled := TRUE;
@@ -530,8 +538,6 @@ end;
 
 { TfrmBancoRepeatChecker.FormCreate }
 procedure TfrmBancoRepeatChecker.FormCreate(Sender: TObject);
-var
-  iIndex: integer;
 begin
   bFirstIdle := True;
   ABancoDrawList := TBancoDrawList.Create;
@@ -556,6 +562,7 @@ begin
   ArrayMemoXCommonBalls[18] := mm18;
   ArrayMemoXCommonBalls[19] := mm19;
   ArrayMemoXCommonBalls[20] := mm20;
+  ArrayMemoXCommonBalls[21] := mmExclus;
 
   slWantedNumbers := TStringList.Create;
   slWantedNumbers.Sorted := True;
@@ -690,7 +697,7 @@ end;
 { TfrmBancoRepeatChecker.actCloseApplicationExecute }
 procedure TfrmBancoRepeatChecker.actCheckOurOurNumbersExecute(Sender: TObject);
 var
-  iDrawIndex, iNbMatch, iMatchIndex: integer;
+  iDrawIndex, iNbMatch, iMatchIndex, iTotal: integer;
   RememberCursor: TCursor;
   sCurrentLine, sMimicLine: string;
   slDummy: TStringList;
@@ -728,27 +735,29 @@ begin
                 begin
                   sCurrentLine := ABancoDrawList.BancoDraw[iDrawIndex].GetBasicReportLine;
                   StatusWindow.Lines.Add(sCurrentLine + ' - ' + ABancoDrawList.BancoDraw[iDrawIndex].CompareToTheseLists(slWantedNumbers, slNonWantedNumbers, iNbMatch));
-                  if iNbMatch >= 0 then
-                  begin
-                    ArrayMemoXCommonBalls[iNbMatch].Lines.Add(sCurrentLine);
-                    inc(ArrayStatsXCommonBalls[iNbMatch]);
-                  end
-                  else
-                  begin
-
-                  end;
+                  ArrayMemoXCommonBalls[iNbMatch].Lines.Add(sCurrentLine);
+                  inc(ArrayStatsXCommonBalls[iNbMatch]);
                   MasterGage.Progress := MasterGage.Progress + 1;
                 end;
 
-                StatusWindow.Lines.Add(ABancoDrawList.BancoDraw[pred(ABancoDrawList.Count)].GetBasicReportLine);
-                MasterGage.Progress := MasterGage.Progress + 1;
+                MemoSommaire.Lines.Add('       Doit contenir: ' + GetInOneSingleCleanSortedLine(slWantedNumbers));
+                MemoSommaire.Lines.Add('Ne doit pas contenir: ' + GetInOneSingleCleanSortedLine(slNonWantedNumbers));
+                MemoSommaire.Lines.Add('');
 
-                for iMatchIndex := 0 to NB_BALLS_PER_DRAW do
+                iTotal := 0;
+                for iMatchIndex := 0 to succ(NB_BALLS_PER_DRAW) do
                 begin
-                  MemoSommaire.Lines.Add(Format('Nombre de retour de %2.2d numéro%s: %d', [iMatchIndex, IfThen(iMatchIndex > 1, 's', ' '), ArrayStatsXCommonBalls[iMatchIndex]]));
+                  if iMatchIndex > NB_BALLS_PER_DRAW then
+                    MemoSommaire.Lines.Add(Format('  Nombre de combinaisons exclues: %5d', [ArrayStatsXCommonBalls[succ(NB_BALLS_PER_DRAW)]]))
+                  else
+                    MemoSommaire.Lines.Add(Format(' Nombre de match avec %2.2d numéro%s: %5d', [iMatchIndex, IfThen(iMatchIndex > 1, 's', ' '), ArrayStatsXCommonBalls[iMatchIndex]]));
                   ArrayMemoXCommonBalls[iMatchIndex].ScrollBars := ssBoth;
                   ArrayMemoXCommonBalls[iMatchIndex].WordWrap := False;
+                  iTotal := iTotal + ArrayStatsXCommonBalls[iMatchIndex];
                 end;
+                MemoSommaire.Lines.Add('                                  -----');
+                MemoSommaire.Lines.Add(Format('                           Total: %d', [iTotal]));
+                MemoSommaire.Lines.Add(Format('              Nombres de tirages: %d', [ABancoDrawList.Count]));
 
                 pgMainPageControl.ActivePage := tsResults;
                 ResultPageControl.ActivePage := tsSummary;
@@ -973,15 +982,34 @@ begin
       result := True;
 end;
 
+{ TfrmBancoRepeatChecker.GetInOneSingleCleanSortedLine }
+function TfrmBancoRepeatChecker.GetInOneSingleCleanSortedLine(slList: TStringList): string;
+var
+  slOutput: TStringList;
+  iIndex: integer;
+begin
+  slOutput := TStringList.Create;
+  try
+    slOutput.Sorted := True;
+    slOutput.Duplicates := dupAccept;
+    slOutput.Delimiter := ',';
+    for iIndex := 0 to pred(slList.Count) do
+      slOutput.Add(Format('%2.2d', [StrToIntDef(slList.Strings[iIndex], 0)]));
+    result := slOutput.DelimitedText;
+  finally
+    FreeAndNil(slOutput);
+  end;
+end;
+
 { TfrmBancoRepeatChecker.ValidateSearchedNumberAreCorrect }
 function TfrmBancoRepeatChecker.ValidateSearchedNumberAreCorrect: boolean;
 begin
   result := False;
 
   WriteStatus('Doit contenir: ', COLORSTATUS);
-  WriteStatus('    ' + slWantedNumbers.DelimitedText, COLORDANGER);
+  WriteStatus('    ' + GetInOneSingleCleanSortedLine(slWantedNumbers), COLORDANGER);
   WriteStatus('Ne doit pas contenir: ', COLORSTATUS);
-  WriteStatus('    ' + slNonWantedNumbers.DelimitedText, COLORDANGER);
+  WriteStatus('    ' + GetInOneSingleCleanSortedLine(slNonWantedNumbers), COLORDANGER);
   WriteStatus('', COLORSTATUS);
 
   if MakeSureNothingInCommon(slWantedNumbers, slNonWantedNumbers) then
@@ -1010,6 +1038,35 @@ begin
     end;
     inc(iIndex);
   end;
+end;
+
+{ TfrmBancoRepeatChecker.actMiseEclairExecute }
+procedure TfrmBancoRepeatChecker.actMiseEclairExecute(Sender: TObject);
+var
+  iWantedNumber: integer;
+  slCurrentNumbers: TStringList;
+  sMaybeNumber: string;
+begin
+  pgMainPageControl.ActivePage := tsLog;
+  iWantedNumber := succ(succ(random(9)));
+  slCurrentNumbers := TStringList.Create;
+  try
+    slCurrentNumbers.Sorted := True;
+    slCurrentNumbers.Duplicates := dupIgnore;
+    while slCurrentNumbers.Count < iWantedNumber do
+    begin
+      sMaybeNumber := Format('%2.2d', [succ(random(MAX_BALL_NUMBER))]);
+      if slCurrentNumbers.IndexOf(sMaybeNumber) = -1 then
+        slCurrentNumbers.Add(sMaybeNumber);
+    end;
+    slCurrentNumbers.Delimiter := ',';
+    edContain.Text := slCurrentNumbers.DelimitedText;
+    edMustNotContain.Text := '';
+
+  finally
+    FreeAndNil(slCurrentNumbers);
+  end;
+
 end;
 
 end.
