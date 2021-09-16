@@ -1,3 +1,4 @@
+![BancoRepeatChecker](https://user-images.githubusercontent.com/16710801/133599790-b7383daf-bec8-4d67-9dee-c54df1d4f2de.png)
 # BancoRepeatChecker
 From a list of draw result of Loto-Québec's lottery "BANCO", study the repetitive numbers in a draw from the previous one.
 
