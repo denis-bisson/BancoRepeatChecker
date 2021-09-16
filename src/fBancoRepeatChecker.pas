@@ -1,3 +1,19 @@
+//********************************************************************************
+//* BANCO REPEAT CHECKER                                                         *
+//* -----------------------------------------------------------------------------*
+//* Application to make some fun with past draw results of Loto-Québec BANCO     *
+//* lottery draw results.                                                        *
+//* May be executed prior build, commmit, backup, etc. to remove unused files.   *
+//* Written by Denis Bisson, Drummondville, Québec, 2021-09-09.                  *
+//* -----------------------------------------------------------------------------*
+//* Originally written by Denis Bisson, Drummondville, Québec, Canada            *
+//*   https://github.com/denis-bisson/                                           *
+//*   2021-09-09                                                                 *
+//* -----------------------------------------------------------------------------*
+//* You should not remove these comments.                                        *
+//********************************************************************************
+//*
+
 unit fBancoRepeatChecker;
 
 interface
@@ -35,7 +51,7 @@ type
   TfrmBancoRepeatChecker = class(TForm)
     ilMainImageList: TImageList;
     alMainActionList: TActionList;
-    actLaunchAnalysis: TAction;
+    actCheckConsecutiveDraws: TAction;
     actValidateDrawResultFile: TAction;
     actCloseApplication: TAction;
     actEditDrawResultFile: TAction;
@@ -110,7 +126,7 @@ type
     procedure aeMainApplicationEventIdle(Sender: TObject; var Done: Boolean);
     procedure actEditDrawResultFileExecute(Sender: TObject);
     procedure actValidateDrawResultFileExecute(Sender: TObject);
-    procedure actLaunchAnalysisExecute(Sender: TObject);
+    procedure actCheckConsecutiveDrawsExecute(Sender: TObject);
     procedure actCloseApplicationExecute(Sender: TObject);
     procedure actCheckOurOurNumbersExecute(Sender: TObject);
     procedure actMiseEclairExecute(Sender: TObject);
@@ -377,10 +393,10 @@ begin
     with BancoRepeatCheckerIniRegistry do
     begin
       LoadWindowRegistryConfig(BancoRepeatCheckerIniRegistry, Self, MAINCONFIGSECTION);
-      pgMainPageControl.ActivePageIndex := ReadInteger(MAINCONFIGSECTION, 'pgMainPageControl', 1);
+      pgMainPageControl.ActivePageIndex := ReadInteger(MAINCONFIGSECTION, 'pgMainPageControl', 0);
       ResultPageControl.ActivePageIndex := ReadInteger(MAINCONFIGSECTION, 'ResultPageControl', 0);
-      edContain.text := ReadString(MAINCONFIGSECTION, 'edContain2', '1-10');
-      edMustNotContain.text := ReadString(MAINCONFIGSECTION, 'edMustNotContain2', '60-70');
+      edContain.text := ReadString(MAINCONFIGSECTION, 'edContain2', '1-10,13,14,15');
+      edMustNotContain.text := ReadString(MAINCONFIGSECTION, 'edMustNotContain2', '40,50,60-70');
       //..LoadConfiguration
     end;
   finally
@@ -627,7 +643,7 @@ begin
 end;
 
 { TfrmBancoRepeatChecker.actLaunchAnalysisExecute }
-procedure TfrmBancoRepeatChecker.actLaunchAnalysisExecute(Sender: TObject);
+procedure TfrmBancoRepeatChecker.actCheckConsecutiveDrawsExecute(Sender: TObject);
 var
   iDrawIndex, iNbMatch, iMatchIndex: integer;
   RememberCursor: TCursor;
@@ -712,11 +728,6 @@ begin
     try
       DecodeDate(now, Year, Month, Day);
       sMimicLine := Format('%4.4d-%2.2d-%2.2d ', [Year, Month, Day]);
-      //      for iBallIndex := 0 to pred(NB_BALLS_PER_DRAW) do
-      //        if iBallIndex <= cbNumberOfNumbers.ItemIndex then
-      //          sMimicLine := sMimicLine + Format(' %2.2d', [succ(ComboChosenNumber[iBallIndex].ItemIndex)])
-      //        else
-      //          sMimicLine := sMimicLine + Format(' %2.2d', [succ(MAX_BALL_NUMBER) + iBallIndex]);
 
       if SanitizeAllExpressions then
       begin
@@ -783,6 +794,35 @@ begin
   finally
     EnableAllelements;
     Screen.Cursor := RememberCursor;
+  end;
+end;
+
+{ TfrmBancoRepeatChecker.actMiseEclairExecute }
+procedure TfrmBancoRepeatChecker.actMiseEclairExecute(Sender: TObject);
+var
+  iWantedNumber: integer;
+  slCurrentNumbers: TStringList;
+  sMaybeNumber: string;
+begin
+  randomize;
+  pgMainPageControl.ActivePage := tsLog;
+  iWantedNumber := succ(succ(random(9)));
+  slCurrentNumbers := TStringList.Create;
+  try
+    slCurrentNumbers.Sorted := True;
+    slCurrentNumbers.Duplicates := dupIgnore;
+    while slCurrentNumbers.Count < iWantedNumber do
+    begin
+      sMaybeNumber := Format('%2.2d', [succ(random(MAX_BALL_NUMBER))]);
+      if slCurrentNumbers.IndexOf(sMaybeNumber) = -1 then
+        slCurrentNumbers.Add(sMaybeNumber);
+    end;
+    slCurrentNumbers.Delimiter := ',';
+    edContain.Text := slCurrentNumbers.DelimitedText;
+    edMustNotContain.Text := '';
+
+  finally
+    FreeAndNil(slCurrentNumbers);
   end;
 end;
 
@@ -982,25 +1022,6 @@ begin
       result := True;
 end;
 
-{ TfrmBancoRepeatChecker.GetInOneSingleCleanSortedLine }
-function TfrmBancoRepeatChecker.GetInOneSingleCleanSortedLine(slList: TStringList): string;
-var
-  slOutput: TStringList;
-  iIndex: integer;
-begin
-  slOutput := TStringList.Create;
-  try
-    slOutput.Sorted := True;
-    slOutput.Duplicates := dupAccept;
-    slOutput.Delimiter := ',';
-    for iIndex := 0 to pred(slList.Count) do
-      slOutput.Add(Format('%2.2d', [StrToIntDef(slList.Strings[iIndex], 0)]));
-    result := slOutput.DelimitedText;
-  finally
-    FreeAndNil(slOutput);
-  end;
-end;
-
 { TfrmBancoRepeatChecker.ValidateSearchedNumberAreCorrect }
 function TfrmBancoRepeatChecker.ValidateSearchedNumberAreCorrect: boolean;
 begin
@@ -1040,33 +1061,23 @@ begin
   end;
 end;
 
-{ TfrmBancoRepeatChecker.actMiseEclairExecute }
-procedure TfrmBancoRepeatChecker.actMiseEclairExecute(Sender: TObject);
+{ TfrmBancoRepeatChecker.GetInOneSingleCleanSortedLine }
+function TfrmBancoRepeatChecker.GetInOneSingleCleanSortedLine(slList: TStringList): string;
 var
-  iWantedNumber: integer;
-  slCurrentNumbers: TStringList;
-  sMaybeNumber: string;
+  slOutput: TStringList;
+  iIndex: integer;
 begin
-  pgMainPageControl.ActivePage := tsLog;
-  iWantedNumber := succ(succ(random(9)));
-  slCurrentNumbers := TStringList.Create;
+  slOutput := TStringList.Create;
   try
-    slCurrentNumbers.Sorted := True;
-    slCurrentNumbers.Duplicates := dupIgnore;
-    while slCurrentNumbers.Count < iWantedNumber do
-    begin
-      sMaybeNumber := Format('%2.2d', [succ(random(MAX_BALL_NUMBER))]);
-      if slCurrentNumbers.IndexOf(sMaybeNumber) = -1 then
-        slCurrentNumbers.Add(sMaybeNumber);
-    end;
-    slCurrentNumbers.Delimiter := ',';
-    edContain.Text := slCurrentNumbers.DelimitedText;
-    edMustNotContain.Text := '';
-
+    slOutput.Sorted := True;
+    slOutput.Duplicates := dupAccept;
+    slOutput.Delimiter := ',';
+    for iIndex := 0 to pred(slList.Count) do
+      slOutput.Add(Format('%2.2d', [StrToIntDef(slList.Strings[iIndex], 0)]));
+    result := slOutput.DelimitedText;
   finally
-    FreeAndNil(slCurrentNumbers);
+    FreeAndNil(slOutput);
   end;
-
 end;
 
 end.
