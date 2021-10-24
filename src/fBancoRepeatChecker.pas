@@ -29,6 +29,7 @@ const
   MAX_BALL_NUMBER = 70;
 
 type
+  //  TComparisonReportLineStyle = (crlsJustcommonNumbers, crls
   TBancoDraw = class(TObject)
   private
     FDrawDate: TDateTime;
@@ -121,6 +122,8 @@ type
     mmExclus: TMemo;
     actMiseEclair: TAction;
     tbMiseEclair: TToolButton;
+    actDelayBetweenRepetitionOfSameNumbers: TAction;
+    tbDelayBetweenRepetitionOfSameNumbers: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure aeMainApplicationEventIdle(Sender: TObject; var Done: Boolean);
@@ -130,6 +133,7 @@ type
     procedure actCloseApplicationExecute(Sender: TObject);
     procedure actCheckOurOurNumbersExecute(Sender: TObject);
     procedure actMiseEclairExecute(Sender: TObject);
+    procedure actDelayBetweenRepetitionOfSameNumbersExecute(Sender: TObject);
   private
     { Private declarations }
     ABancoDrawList: TBancoDrawList;
@@ -138,6 +142,7 @@ type
     ArrayMemoXCommonBalls: array[0..succ(NB_BALLS_PER_DRAW)] of TMemo;
     ArrayStatsXCommonBalls: array[0..succ(NB_BALLS_PER_DRAW)] of integer;
     slWantedNumbers, slNonWantedNumbers: TStringList;
+    giNumberOfMatchWanted, giLargestDrawDistanceInDays: integer;
     procedure MySetTitle;
     procedure LoadConfiguration;
     procedure SaveConfiguration;
@@ -308,15 +313,21 @@ begin
   result := Format('%2.2d : %s', [paramNbMatch, Result]);
 end;
 
+{ MyGetDateInStr }
+function MyGetDateInStr(ADate: TDateTime): string;
+var
+  Year, Month, Day: Word;
+begin
+  DecodeDate(ADate, Year, Month, Day);
+  result := Format('%4.4d-%2.2d-%2.2d', [Year, Month, Day]);
+end;
+
 { TBancoDraw.GetBasicReportLine }
 function TBancoDraw.GetBasicReportLine: string;
 var
   iBallIndex: integer;
-  Year, Month, Day: Word;
 begin
-  result := '';
-  DecodeDate(FDrawDate, Year, Month, Day);
-  result := Format('%4.4d-%2.2d-%2.2d ', [Year, Month, Day]);
+  result := MyGetDateInStr(FDrawDate) + ' ';
   for iBallIndex := 0 to pred(NB_BALLS_PER_DRAW) do
     result := result + Format(' %2.2d', [FBallNumbers[iBallIndex]]);
 end;
@@ -397,6 +408,8 @@ begin
       ResultPageControl.ActivePageIndex := ReadInteger(MAINCONFIGSECTION, 'ResultPageControl', 0);
       edContain.text := ReadString(MAINCONFIGSECTION, 'edContain2', '1-10,13,14,15');
       edMustNotContain.text := ReadString(MAINCONFIGSECTION, 'edMustNotContain2', '40,50,60-70');
+      giNumberOfMatchWanted := ReadInteger(MAINCONFIGSECTION, 'giNumberOfMatchWanted', 10);
+      giLargestDrawDistanceInDays := ReadInteger(MAINCONFIGSECTION, 'giLargestDrawDistanceInDays', 100);
       //..LoadConfiguration
     end;
   finally
@@ -433,6 +446,8 @@ begin
       WriteInteger(MAINCONFIGSECTION, 'ResultPageControl', ResultPageControl.ActivePageIndex);
       WriteString(MAINCONFIGSECTION, 'edContain2', edContain.text);
       WriteString(MAINCONFIGSECTION, 'edMustNotContain2', edMustNotContain.text);
+      WriteInteger(MAINCONFIGSECTION, 'giNumberOfMatchWanted', giNumberOfMatchWanted);
+      WriteInteger(MAINCONFIGSECTION, 'giLargestDrawDistanceInDays', giLargestDrawDistanceInDays);
       //..SaveConfiguration
     end;
   finally
@@ -537,6 +552,8 @@ begin
       else
       begin
         WriteStatus('Aucune erreur détectée! Bravo!', COLORSUCCESS);
+        WriteStatus('Nombre de tirages: ' + ABancoDrawList.Count.ToString, COLORSUCCESS);
+        WriteStatus(Format('Écart entre le premier et le dernier tirage: %d jours', [Trunc(ABancoDrawList.BancoDraw[0].DrawDate - ABancoDrawList.BancoDraw[pred(ABancoDrawList.Count)].DrawDate)]), COLORSUCCESS);
         result := True;
       end;
 
@@ -1077,6 +1094,136 @@ begin
     result := slOutput.DelimitedText;
   finally
     FreeAndNil(slOutput);
+  end;
+end;
+
+{ TfrmBancoRepeatChecker.actDelayBetweenRepetitionOfSameNumbersExecute(   }
+procedure TfrmBancoRepeatChecker.actDelayBetweenRepetitionOfSameNumbersExecute(Sender: TObject);
+var
+  iNbMatch: integer;
+  iKeepGoing, iReferenceDrawIndex, iNextToCompareDrawIndex, iIntervalIndex, iMatchIndex: integer;
+  localNumberOfMatchWanted, localLargestDrawDistanceInDays: integer;
+  RememberCursor: TCursor;
+  sNumberOfMatchWanted, sLargestDrawDistanceInDays, sCurrentLine, sReportLine: string;
+begin
+  DisableAllElements;
+  RememberCursor := Screen.Cursor;
+  Screen.Cursor := crHourGlass;
+  try
+    iKeepGoing := 0;
+
+    sNumberOfMatchWanted := giNumberOfMatchWanted.ToString;
+    sLargestDrawDistanceInDays := giLargestDrawDistanceInDays.ToString;
+
+    if iKeepGoing = 0 then
+      if not InputQuery('Recherche de groupe de numéros communs', 'Nombre minimal de numéros communs', sNumberOfMatchWanted) then inc(iKeepGoing);
+
+    if iKeepGoing = 0 then
+      if not InputQuery('Recherche de groupe de numéros communs', 'Nombre de jours d''écart entre deux tirages', sLargestDrawDistanceInDays) then inc(iKeepGoing);
+
+    if iKeepGoing = 0 then
+    begin
+      localNumberOfMatchWanted := StrToIntDef(sNumberOfMatchWanted, -1);
+      localLargestDrawDistanceInDays := StrToIntDef(sLargestDrawDistanceInDays, -1);
+      if ((localNumberOfMatchWanted > 0) and (localLargestDrawDistanceInDays > 1)) then
+      begin
+        giNumberOfMatchWanted := localNumberOfMatchWanted;
+        giLargestDrawDistanceInDays := localLargestDrawDistanceInDays;
+      end
+      else
+      begin
+        inc(iKeepGoing);
+        WriteStatus('ERREUR: Mauvaise valeur...', COLORERROR);
+      end;
+    end
+    else
+    begin
+      WriteStatus('ERREUR: Mauvaise valeur...', COLORERROR);
+    end;
+
+    if iKeepGoing = 0 then
+    begin
+      if LoadDatabaseInMemory then
+      begin
+        WriteStatus(Format('       Nombre minimale de numéro commun: %d', [giNumberOfMatchWanted]), COLORDANGER);
+        WriteStatus(Format(' Intervalle de jour maximale à analyser: %d', [giLargestDrawDistanceInDays]), COLORDANGER);
+
+        MasterGage.Progress := 0;
+        MasterGage.MaxValue := ABancoDrawList.Count;
+        MasterGage.Visible := True;
+        Application.ProcessMessages;
+        try
+          StatusWindow.Lines.BeginUpdate;
+          try
+            iReferenceDrawIndex := 0;
+
+            while (iReferenceDrawIndex < ABancoDrawList.Count) do
+            begin
+              iIntervalIndex := 1;
+
+              while (iIntervalIndex <= giLargestDrawDistanceInDays) do
+              begin
+                iNextToCompareDrawIndex := iReferenceDrawIndex + iIntervalIndex;
+
+                if iNextToCompareDrawIndex < ABancoDrawList.Count then
+                begin
+                  if (ABancoDrawList.BancoDraw[iReferenceDrawIndex].DrawDate - ABancoDrawList.BancoDraw[iNextToCompareDrawIndex].DrawDate) <= giLargestDrawDistanceInDays then
+                  begin
+                    sReportLine := ABancoDrawList.BancoDraw[iReferenceDrawIndex].CompareToThisDraw(ABancoDrawList.BancoDraw[iNextToCompareDrawIndex], iNbMatch);
+                    if iNbMatch >= giNumberOfMatchWanted then
+                    begin
+                      sCurrentLine := Format('%s & %s (%4.d) - %s', [MyGetDateInStr(ABancoDrawList.BancoDraw[iReferenceDrawIndex].FDrawDate), MyGetDateInStr(ABancoDrawList.BancoDraw[iNextToCompareDrawIndex].FDrawDate), Trunc(ABancoDrawList.BancoDraw[iReferenceDrawIndex].FDrawDate - ABancoDrawList.BancoDraw[iNextToCompareDrawIndex].FDrawDate), sReportLine]);
+                      ArrayMemoXCommonBalls[iNbMatch].Lines.Add(sCurrentLine);
+                      inc(ArrayStatsXCommonBalls[iNbMatch]);
+                    end;
+                  end
+                  else
+                  begin
+                    iIntervalIndex := giLargestDrawDistanceInDays;
+                  end;
+                end;
+                inc(iIntervalIndex);
+              end;
+              inc(iReferenceDrawIndex);
+              MasterGage.Progress := MasterGage.Progress + 1;
+              if MasterGage.Progress mod 100 = 0 then Application.ProcessMessages;
+            end;
+
+            MemoSommaire.Lines.Add(Format('      Nombre minimal de numéros communs: %d', [giNumberOfMatchWanted]));
+            MemoSommaire.Lines.Add(Format(' Intervalle de jours maximal à analyser: %d', [giLargestDrawDistanceInDays]));
+            MemoSommaire.Lines.Add('');
+
+            for iMatchIndex := 0 to NB_BALLS_PER_DRAW do
+            begin
+              if iMatchIndex >= giNumberOfMatchWanted then
+              begin
+                MemoSommaire.Lines.Add(Format('Nombre de retour de %2.2d numéro%s: %d', [iMatchIndex, IfThen(iMatchIndex > 1, 's', ' '), ArrayStatsXCommonBalls[iMatchIndex]]));
+                ArrayMemoXCommonBalls[iMatchIndex].ScrollBars := ssBoth;
+                ArrayMemoXCommonBalls[iMatchIndex].WordWrap := False;
+              end;
+            end;
+
+            pgMainPageControl.ActivePage := tsResults;
+            ResultPageControl.ActivePage := tsSummary;
+
+          finally
+            StatusWindow.Lines.EndUpdate;
+          end;
+          Application.ProcessMessages;
+        finally
+          MasterGage.Visible := False;
+        end;
+
+        StatusWindow.SelStart := Length(StatusWindow.Text);
+        StatusWindow.SelLength := 0;
+        SendMessage(StatusWindow.Handle, EM_SCROLLCARET, 0, 0);
+
+        bFinalActionResult := True;
+      end;
+    end;
+  finally
+    EnableAllelements;
+    Screen.Cursor := RememberCursor;
   end;
 end;
 
